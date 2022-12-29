@@ -10,10 +10,9 @@ def getUserData(userTag):
     data = {
         "operationName": "AccountManagementPageQuery",
         "variables": {
-            "cc": userTag,
-            "uid": userTag
+            "cc": userTag
         },
-        "query": "fragment userProfilePage on User {\n  fbUid\n  displayName\n  connectCode {\n    code\n    __typename\n  }\n  status\n  activeSubscription {\n    level\n    hasGiftSub\n    __typename\n  }\n  rankedNetplayProfile {\n    id\n    ratingOrdinal\n    ratingUpdateCount\n    wins\n    losses\n    dailyGlobalPlacement\n    dailyRegionalPlacement\n    continent\n    characters {\n      id\n      character\n      gameCount\n      __typename\n    }\n    __typename\n  }\n  __typename\n}\n\nquery AccountManagementPageQuery($cc: String!, $uid: String!) {\n  getUser(fbUid: $uid) {\n    ...userProfilePage\n    __typename\n  }\n  getConnectCode(code: $cc) {\n    user {\n      ...userProfilePage\n      __typename\n    }\n    __typename\n  }\n}\n"
+        "query": "fragment userProfilePage on User {rankedNetplayProfile {\n    ratingOrdinal\n    ratingUpdateCount\n    wins\n    losses\n  characters {\n      character\n      gameCount}}}query AccountManagementPageQuery($cc: String!) {getConnectCode(code: $cc) {user{...userProfilePage}}}"
     }
 
     response = json.loads(requests.post(url, json=data).text)
