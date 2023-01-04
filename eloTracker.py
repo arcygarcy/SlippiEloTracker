@@ -32,6 +32,19 @@ def addUser(tag):
 
     return response
 
+#delete user if tag is not found on slippi servers
+def deleteUser(tag):
+    client = MongoClient(
+        'mongodb+srv://ArcyGarcy:QsDmAEFGlugTHWVh@slippielotracker.13pbngw.mongodb.net/test')
+    db = client.slippiEloTracker
+    cluster = db.UserData
+
+    data = {'tag': tag}
+
+    response = cluster.delete_one(data)
+
+    return response
+
 # gets data for a specific tag
 def find(tag):
     client = MongoClient(
@@ -79,25 +92,29 @@ def addDataPoint(tag, newPoint):
 def updateUser(tag):
     print(f'{tag} - Start Updating')
 
+    databaseData = find(tag)
     dataFromSlippiServers = getUserData(tag)['data']['getConnectCode']
 
-    databaseData = find(tag)
+    if not dataFromSlippiServers == None:
+        newPoint = float(
+            dataFromSlippiServers['user']['rankedNetplayProfile']['ratingOrdinal'])
+        lastPoint = databaseData['datapoints'][-1] if len(
+            databaseData['datapoints']) > 0 else -1
 
-    newPoint = float(
-        dataFromSlippiServers['user']['rankedNetplayProfile']['ratingOrdinal'])
-    lastPoint = databaseData['datapoints'][-1] if len(
-        databaseData['datapoints']) > 0 else -1
+        if newPoint != lastPoint:
+            addDataPoint(tag, newPoint)
 
-    if newPoint != lastPoint:
-        addDataPoint(tag, newPoint)
-
-    print(f'{tag} - Done Updating')
+        print(f'{tag} - Done Updating')
+    else:
+        #Delete
+        print('To Delete')
+        deleteUser(tag)
 
 # threading function
 def updateDataBase():
     print(time.ctime())
     tags = findAllTags()
-    # tags = ['AF#3']
+    # tags = ['AF#999']
     threads = []
     for tag in tags:
         t = Thread(target=updateUser, args=(tag,))
