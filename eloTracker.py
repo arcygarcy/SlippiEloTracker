@@ -1,4 +1,3 @@
-from threading import Thread
 from pymongo import MongoClient
 import requests
 import json
@@ -114,15 +113,8 @@ def updateUser(tag):
 def updateDataBase():
     print(time.ctime())
     tags = findAllTags()
-    # tags = ['AF#999']
-    threads = []
     for tag in tags:
-        t = Thread(target=updateUser, args=(tag,))
-        threads.append(t)
-        t.start()
-
-    for t in threads:
-        t.join()
+        updateUser(tag)
 
 def main():
     count = 0
