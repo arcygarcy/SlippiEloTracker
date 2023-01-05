@@ -135,9 +135,10 @@ def updateUser(tag):
     print(tag + ':Getting Current Rank')
     databaseData = getUserFromDataBase(tag)
     slippiData = getUserDataFromSlippi(tag)
+    print(databaseData)
 
     if not slippiData['data']['getConnectCode'] == None:
-        mostRecentDatabaseRank = databaseData['document']['datapoints'][-1]
+        mostRecentDatabaseRank = databaseData['document']['datapoints'][-1] if len(databaseData['document']['datapoints'])>1 else 0
         currentSlippiRank = slippiData['data']['getConnectCode']['user']['rankedNetplayProfile']['ratingOrdinal']
 
         if not mostRecentDatabaseRank == currentSlippiRank:
@@ -163,15 +164,16 @@ def updateDataBase():
         t.join()
 
 def main():
-    count = 0
-    while True:
-        time.sleep(1)
-        if count == 1:
-            updateDataBase()
-            print('------------------------')
-        elif count == 180:
-            count = 0
-        count += 1
+    updateUser('CRAY#527')
+    # count = 0
+    # while True:
+    #     time.sleep(1)
+    #     if count == 1:
+    #         updateDataBase()
+    #         print('------------------------')
+    #     elif count == 180:
+    #         count = 0
+    #     count += 1
 
 if __name__ == '__main__':
     main()
