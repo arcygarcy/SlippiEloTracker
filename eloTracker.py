@@ -137,7 +137,7 @@ def updateUser(tag):
     slippiData = getUserDataFromSlippi(tag)
 
     if not slippiData['data']['getConnectCode'] == None:
-        mostRecentDatabaseRank = databaseData['document']['datapoints'][-1] if len(databaseData['document']['datapoints'])>1 else 0
+        mostRecentDatabaseRank = databaseData['document']['datapoints'][-1] if len(databaseData['document']['datapoints'])>0 else 0
         currentSlippiRank = slippiData['data']['getConnectCode']['user']['rankedNetplayProfile']['ratingOrdinal']
 
         if not mostRecentDatabaseRank == currentSlippiRank:
