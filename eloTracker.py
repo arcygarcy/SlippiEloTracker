@@ -17,7 +17,7 @@ def getUserDataFromSlippi(tag):
     response = requests.request("POST", url, json=data)
 
     data = {'data': {'getConnectCode': None}}
-    if response != None:
+    if not response.status_code == 200:
         data = json.loads(response.text)
 
     return data
@@ -176,7 +176,7 @@ def test():
 
 def main():
     longQueueMinutes = 20
-    shortQueueMinutes = 5
+    shortQueueMinutes = 0.1
 
     allUsers = {}
     count = 0
