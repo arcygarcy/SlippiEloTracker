@@ -14,11 +14,13 @@ def getUserDataFromSlippi(tag):
         "query": "fragment userProfilePage on User {rankedNetplayProfile {\n    ratingOrdinal\n    ratingUpdateCount\n    wins\n    losses\n  characters {\n      character\n      gameCount}}}query AccountManagementPageQuery($cc: String!) {getConnectCode(code: $cc) {user{...userProfilePage}}}"
     }
 
-    response = json.loads(requests.post(url, json=data).text)
+    response = requests.request("POST", url, json=data)
 
     time.sleep(0.1)
 
-    return response
+    data = json.loads(response.text)
+
+    return data
 
 #delete user if tag is not found on slippi servers
 def deleteUserFromDatabase(tag):
@@ -134,8 +136,6 @@ def updateUserToDatabase(tag, newPoint):
     return data
 
 def updateUser(tag):
-    # print(f'{tag:<10}Getting Current Rank')
-
     dataFromSlippi = getUserDataFromSlippi(tag)
     dataFromDatabase = getUserFromDataBase(tag)
 
@@ -146,34 +146,35 @@ def updateUser(tag):
         currentSlippiRank = dataFromSlippi['data']['getConnectCode']['user']['rankedNetplayProfile']['ratingOrdinal']
 
         if not mostRecentDatabaseRank == currentSlippiRank:
-            print(f'{tag:<10}Updating Current Rank')
             updateUserToDatabase(tag, currentSlippiRank)
         else:
-            print(f'{tag:<10}Rank is Already Up to Date Adding to Slow Queue Detection')
             returnData[0]=1
     else:
-        print(f'{tag:<10}User Not Found on Slippi Servers Adding to Delete Detection')
         returnData[1]=1
 
     return returnData
 
 def updateUserAndQueue(tag, userData):
     updateQueueData = updateUser(tag)
+    message = ''
     if not updateQueueData[0] == 0:
         userData[0] += 1 if userData[0] < 6 else 0
+        message = 'Rank is Already Up to Date Adding to Slow Queue Detection'
     else:
         userData[0] = 0
+        message = 'Updated Current Rank'
     if not updateQueueData[1] == 0:
         userData[1] += 1
+        message = 'User Not Found on Slippi Servers Adding to Delete Detection'
     else:
         userData[1] = 0
+    print(f'{tag:<10}{str(userData):<10}{message}')
 
 def test():
     print('----------TEST----------')
     print('------TEST_COMPLETE-----')
 
 def main():
-    #every 30 min get all users
     longQueueMinutes = 20
     shortQueueMinutes = 5
 
@@ -187,16 +188,16 @@ def main():
             print(f'Current time: {time.ctime():<25}Short Queue')
             print('------------------------------------------------------------------------')
 
-            for user in getAllUsersTagsFromDataBase():
-                if not user in allUsers.keys():
-                    allUsers[user]=[0,0]
+            # for user in getAllUsersTagsFromDataBase():
+            #     if not user in allUsers.keys():
+            #         allUsers[user]=[0,0]
             
             usersToDelete = []
             threads = []
             for user in allUsers.keys():
                 if allUsers[user][0] < 5 and allUsers[user][1] < 5:
                     t = Thread(target=updateUserAndQueue, args=(user, allUsers[user]))
-                    print(f'{user:<10}Updating Users Rank {t.name}')
+                    print(f'{user:<10}{str(allUsers[user]):<10}Updating Users Rank {t.name}')
                     threads.append(t)
                     t.start()
                 elif allUsers[user][1] >= 5:
@@ -219,7 +220,7 @@ def main():
             threads = []
             for user in allUsers.keys():
                 t = Thread(target=updateUserAndQueue, args=(user, allUsers[user]))
-                print(f'{user:<10}' + t.name)
+                print(f'{user:<10}{str(allUsers[user]):<10}Updating Users Rank {t.name}')
                 threads.append(t)
                 t.start()
 
