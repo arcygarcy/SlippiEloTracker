@@ -215,7 +215,7 @@ def main():
 
         elif count%(60*longQueueMinutes) == 0:
             print('---------------------------------------------------------------------------')
-            print(f'Current time: {time.ctime():<25}Short Queue {shortQueueMinutes} mins')
+            print(f'{"Current time: " + time.ctime() + " Long Queue Time " + str(longQueueMinutes) + " mins":^75}')
             print('---------------------------------------------------------------------------')
             print(f'{"TAG":^10}|{"QUEUE":^8}|{"MESSAGE":^57}')
             print('---------------------------------------------------------------------------')
