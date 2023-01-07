@@ -176,7 +176,7 @@ def test():
 
 def main():
     longQueueMinutes = 20
-    shortQueueMinutes = 0.1
+    shortQueueMinutes = 5
 
     allUsers = {}
     count = 0
