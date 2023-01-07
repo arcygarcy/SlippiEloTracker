@@ -219,8 +219,12 @@ def main():
             print('---------------------------------------------------------------------------')
             print(f'{"TAG":^10}|{"QUEUE":^8}|{"MESSAGE":^57}')
             print('---------------------------------------------------------------------------')
-            
+
             count = 0
+
+            for user in getAllUsersTagsFromDataBase():
+                if not user in allUsers.keys():
+                    allUsers[user]=[0,0]
             
             threads = []
             for user in allUsers.keys():
