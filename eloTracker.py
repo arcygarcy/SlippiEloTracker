@@ -164,7 +164,7 @@ def updateUserAndQueue(tag, userData):
     message = ''
     if not updateQueueData[0] == 0:
         userData[0] += 1 if userData[0] < 7 else 0
-        message = 'Rank Up To Date, Incrementing Long Queue'
+        message = 'No Change, Incrementing Long Queue'
     else:
         userData[0] = 0
         message = 'Updated Current Rank'
@@ -173,7 +173,7 @@ def updateUserAndQueue(tag, userData):
         message = 'User Not Found, Incrementing Delete Value'
     else:
         userData[1] = 0
-    print(f'{tag:<10}{str(userData):<10}{message}')
+    print(f'{tag:<10}{str(userData):<8}{message}')
 
 def main():
     longQueueMinutes = 24
