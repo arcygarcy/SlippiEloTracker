@@ -176,7 +176,7 @@ def updateUserAndQueue(tag, userData):
     print(f'{tag:<10}{str(userData):<8}{message}')
 
 def main():
-    longQueueMinutes = 24
+    longQueueMinutes = 20
     shortQueueMinutes = 4
 
     allUsers = {}
