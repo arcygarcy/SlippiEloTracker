@@ -16,9 +16,9 @@ def getUserDataFromSlippi(tag):
 
     response = requests.request("POST", url, json=data)
 
-    time.sleep(0.1)
-
-    data = json.loads(response.text)
+    data = {'data': {'getConnectCode': None}}
+    if response != None:
+        data = json.loads(response.text)
 
     return data
 
