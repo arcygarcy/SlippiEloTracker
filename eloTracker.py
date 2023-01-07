@@ -102,7 +102,7 @@ def getAllUsersTagsFromDataBase():
     return tags
 
 # adds a new datapoint to a specified tag, data is an array of points
-def updateUserToDatabase(tag, newPoint):
+def updateUserToDatabase(tag, slippiData):
     url = "https://data.mongodb-api.com/app/data-wterg/endpoint/data/v1/action/updateOne"
 
     payload = json.dumps({
@@ -114,14 +114,19 @@ def updateUserToDatabase(tag, newPoint):
     },
     "update": {
         "$push": {
-        "datapoints": {
-            "$each": [
-            newPoint
-            ],
-            "$slice": -100
+            "datapoints": {
+                "$each": [
+                slippiData['data']['getConnectCode']['user']['rankedNetplayProfile']['ratingOrdinal']
+                ],
+                "$slice": -50
+                }
+        },
+        "$set": {
+            "characters": slippiData['data']['getConnectCode']['user']['rankedNetplayProfile']['characters'],
+            "wins": slippiData['data']['getConnectCode']['user']['rankedNetplayProfile']['wins'],
+            "losses": slippiData['data']['getConnectCode']['user']['rankedNetplayProfile']['losses']
         }
         }
-    }
     })
     headers = {
     'Content-Type': 'application/json',
@@ -146,7 +151,7 @@ def updateUser(tag):
         currentSlippiRank = dataFromSlippi['data']['getConnectCode']['user']['rankedNetplayProfile']['ratingOrdinal']
 
         if not mostRecentDatabaseRank == currentSlippiRank:
-            updateUserToDatabase(tag, currentSlippiRank)
+            updateUserToDatabase(tag, dataFromSlippi)
         else:
             returnData[0]=1
     else:
@@ -158,25 +163,21 @@ def updateUserAndQueue(tag, userData):
     updateQueueData = updateUser(tag)
     message = ''
     if not updateQueueData[0] == 0:
-        userData[0] += 1 if userData[0] < 6 else 0
-        message = 'Rank is Already Up to Date Adding to Slow Queue Detection'
+        userData[0] += 1 if userData[0] < 7 else 0
+        message = 'Rank Up To Date, Incrementing Long Queue'
     else:
         userData[0] = 0
         message = 'Updated Current Rank'
     if not updateQueueData[1] == 0:
         userData[1] += 1
-        message = 'User Not Found on Slippi Servers Adding to Delete Detection'
+        message = 'User Not Found, Incrementing Delete Value'
     else:
         userData[1] = 0
     print(f'{tag:<10}{str(userData):<10}{message}')
 
-def test():
-    print('----------TEST----------')
-    print('------TEST_COMPLETE-----')
-
 def main():
-    longQueueMinutes = 20
-    shortQueueMinutes = 5
+    longQueueMinutes = 24
+    shortQueueMinutes = 4
 
     allUsers = {}
     count = 0
@@ -185,7 +186,7 @@ def main():
 
         if count == 0 or count%(60*shortQueueMinutes) == 0 and not count%(60*longQueueMinutes) == 0:
             print('------------------------------------------------------------------------')
-            print(f'Current time: {time.ctime():<25}Short Queue')
+            print(f'Current time: {time.ctime():<25}Short Queue {shortQueueMinutes} mins')
             print('------------------------------------------------------------------------')
 
             for user in getAllUsersTagsFromDataBase():
@@ -195,9 +196,9 @@ def main():
             usersToDelete = []
             threads = []
             for user in allUsers.keys():
-                if allUsers[user][0] < 5 and allUsers[user][1] < 5:
+                if allUsers[user][0] < 6 and allUsers[user][1] < 5:
                     t = Thread(target=updateUserAndQueue, args=(user, allUsers[user]))
-                    print(f'{user:<10}{str(allUsers[user]):<10}Updating Users Rank {t.name}')
+                    print(f'{user:<10}{str(allUsers[user]):<8}Updating Users Rank {t.name}')
                     threads.append(t)
                     t.start()
                 elif allUsers[user][1] >= 5:
@@ -212,7 +213,7 @@ def main():
 
         elif count%(60*longQueueMinutes) == 0:
             print('------------------------------------------------------------------------')
-            print(f'Current time: {time.ctime():<25}Long Queue')
+            print(f'Current time: {time.ctime():<25}Long Queue  {longQueueMinutes} mins')
             print('------------------------------------------------------------------------')
             
             count = 0
