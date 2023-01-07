@@ -16,6 +16,8 @@ def getUserDataFromSlippi(tag):
 
     response = json.loads(requests.post(url, json=data).text)
 
+    time.sleep(0.1)
+
     return response
 
 #delete user if tag is not found on slippi servers
@@ -132,45 +134,98 @@ def updateUserToDatabase(tag, newPoint):
     return data
 
 def updateUser(tag):
-    print(tag + ':Getting Current Rank')
-    databaseData = getUserFromDataBase(tag)
-    slippiData = getUserDataFromSlippi(tag)
+    # print(f'{tag:<10}Getting Current Rank')
 
-    if not slippiData['data']['getConnectCode'] == None:
-        mostRecentDatabaseRank = databaseData['document']['datapoints'][-1] if len(databaseData['document']['datapoints'])>0 else 0
-        currentSlippiRank = slippiData['data']['getConnectCode']['user']['rankedNetplayProfile']['ratingOrdinal']
+    dataFromSlippi = getUserDataFromSlippi(tag)
+    dataFromDatabase = getUserFromDataBase(tag)
+
+    returnData = [0, 0]
+
+    if not dataFromSlippi['data']['getConnectCode'] == None:
+        mostRecentDatabaseRank = dataFromDatabase['document']['datapoints'][-1] if len(dataFromDatabase['document']['datapoints'])>0 else 0
+        currentSlippiRank = dataFromSlippi['data']['getConnectCode']['user']['rankedNetplayProfile']['ratingOrdinal']
 
         if not mostRecentDatabaseRank == currentSlippiRank:
-            print(tag + ':Updating current rank')
+            print(f'{tag:<10}Updating Current Rank')
             updateUserToDatabase(tag, currentSlippiRank)
         else:
-            print(tag + ':Rank is already up to date')
+            print(f'{tag:<10}Rank is Already Up to Date Adding to Slow Queue Detection')
+            returnData[0]=1
     else:
-        print('User not found on slippi servers.')
-        deleteUserFromDatabase(tag)
+        print(f'{tag:<10}User Not Found on Slippi Servers Adding to Delete Detection')
+        returnData[1]=1
 
-# threading function
-def updateDataBase():
-    print(time.ctime())
-    tags = getAllUsersTagsFromDataBase()
-    threads = []
-    for tag in tags:
-        t = Thread(target=updateUser, args=(tag,))
-        threads.append(t)
-        t.start()
+    return returnData
 
-    for t in threads:
-        t.join()
+def updateUserAndQueue(tag, userData):
+    updateQueueData = updateUser(tag)
+    if not updateQueueData[0] == 0:
+        userData[0] += 1 if userData[0] < 6 else 0
+    else:
+        userData[0] = 0
+    if not updateQueueData[1] == 0:
+        userData[1] += 1
+    else:
+        userData[1] = 0
+
+def test():
+    print('----------TEST----------')
+    print('------TEST_COMPLETE-----')
 
 def main():
+    #every 30 min get all users
+    longQueueMinutes = 20
+    shortQueueMinutes = 5
+
+    allUsers = {}
     count = 0
     while True:
         time.sleep(1)
-        if count == 1:
-            updateDataBase()
-            print('------------------------')
-        elif count == 180:
+
+        if count == 0 or count%(60*shortQueueMinutes) == 0 and not count%(60*longQueueMinutes) == 0:
+            print('------------------------------------------------------------------------')
+            print(f'Current time: {time.ctime():<25}Short Queue')
+            print('------------------------------------------------------------------------')
+
+            for user in getAllUsersTagsFromDataBase():
+                if not user in allUsers.keys():
+                    allUsers[user]=[0,0]
+            
+            usersToDelete = []
+            threads = []
+            for user in allUsers.keys():
+                if allUsers[user][0] < 5 and allUsers[user][1] < 5:
+                    t = Thread(target=updateUserAndQueue, args=(user, allUsers[user]))
+                    print(f'{user:<10}Updating Users Rank {t.name}')
+                    threads.append(t)
+                    t.start()
+                elif allUsers[user][1] >= 5:
+                    deleteUserFromDatabase(user)
+                    usersToDelete.append(user)
+
+            for thread in threads:
+                thread.join()
+
+            for user in usersToDelete:
+                allUsers.pop(user)
+
+        elif count%(60*longQueueMinutes) == 0:
+            print('------------------------------------------------------------------------')
+            print(f'Current time: {time.ctime():<25}Long Queue')
+            print('------------------------------------------------------------------------')
+            
             count = 0
+            
+            threads = []
+            for user in allUsers.keys():
+                t = Thread(target=updateUserAndQueue, args=(user, allUsers[user]))
+                print(f'{user:<10}' + t.name)
+                threads.append(t)
+                t.start()
+
+            for thread in threads:
+                thread.join()
+
         count += 1
 
 if __name__ == '__main__':
