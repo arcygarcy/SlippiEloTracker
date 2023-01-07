@@ -188,9 +188,9 @@ def main():
             print(f'Current time: {time.ctime():<25}Short Queue')
             print('------------------------------------------------------------------------')
 
-            # for user in getAllUsersTagsFromDataBase():
-            #     if not user in allUsers.keys():
-            #         allUsers[user]=[0,0]
+            for user in getAllUsersTagsFromDataBase():
+                if not user in allUsers.keys():
+                    allUsers[user]=[0,0]
             
             usersToDelete = []
             threads = []
