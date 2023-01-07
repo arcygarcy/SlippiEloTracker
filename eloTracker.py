@@ -17,7 +17,7 @@ def getUserDataFromSlippi(tag):
     response = requests.request("POST", url, json=data)
 
     data = {'data': {'getConnectCode': None}}
-    if not response.status_code == 200:
+    if response.status_code == 200:
         data = json.loads(response.text)
 
     return data
