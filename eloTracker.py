@@ -173,7 +173,7 @@ def updateUserAndQueue(tag, userData):
         message = 'User Not Found, Incrementing Delete Value'
     else:
         userData[1] = 0
-    print(f'{tag:<10}|{str(userData):^8}|{message:^56}')
+    print(f'{tag:<10}|{str(userData):^8}|{message:^57}')
 
 def main():
     longQueueMinutes = 20
@@ -186,9 +186,9 @@ def main():
 
         if count == 0 or count%(60*shortQueueMinutes) == 0 and not count%(60*longQueueMinutes) == 0:
             print('---------------------------------------------------------------------------')
-            print(f'Current time: {time.ctime():<25}Short Queue {shortQueueMinutes} mins')
+            print(f'{"Current time: " + time.ctime() + " Short Queue Time " + str(shortQueueMinutes) + " mins":^75}')
             print('---------------------------------------------------------------------------')
-            print(f'{"TAG":^10}|{"QUEUE":^8}|{"MESSAGE":^56}')
+            print(f'{"TAG":^10}|{"QUEUE":^8}|{"MESSAGE":^57}')
             print('---------------------------------------------------------------------------')
 
             for user in getAllUsersTagsFromDataBase():
@@ -200,7 +200,7 @@ def main():
             for user in allUsers.keys():
                 if allUsers[user][0] < 6 and allUsers[user][1] < 5:
                     t = Thread(target=updateUserAndQueue, args=(user, allUsers[user]))
-                    print(f'{user:<10}|{str(allUsers[user]):^8}|{"Updating Users Rank on: " + t.name:^56}')
+                    print(f'{user:<10}|{str(allUsers[user]):^8}|{"Updating Users Rank on: " + t.name:^57}')
                     threads.append(t)
                     t.start()
                 elif allUsers[user][1] >= 5:
@@ -217,7 +217,7 @@ def main():
             print('---------------------------------------------------------------------------')
             print(f'Current time: {time.ctime():<25}Short Queue {shortQueueMinutes} mins')
             print('---------------------------------------------------------------------------')
-            print(f'{"TAG":^10}|{"QUEUE":^8}|{"MESSAGE":^56}')
+            print(f'{"TAG":^10}|{"QUEUE":^8}|{"MESSAGE":^57}')
             print('---------------------------------------------------------------------------')
             
             count = 0
@@ -225,7 +225,7 @@ def main():
             threads = []
             for user in allUsers.keys():
                 t = Thread(target=updateUserAndQueue, args=(user, allUsers[user]))
-                print(f'{user:<10}|{str(allUsers[user]):^8}|{"Updating Users Rank on: " + t.name:^56}')
+                print(f'{user:<10}|{str(allUsers[user]):^8}|{"Updating Users Rank on: " + t.name:^57}')
                 threads.append(t)
                 t.start()
 
