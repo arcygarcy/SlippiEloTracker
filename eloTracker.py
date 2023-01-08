@@ -200,7 +200,7 @@ def main():
             for user in allUsers.keys():
                 if allUsers[user][0] < 6 and allUsers[user][1] < 5:
                     t = Thread(target=updateUserAndQueue, args=(user, allUsers[user]))
-                    print(f'{user:<10}|{str(allUsers[user]):^8}|{"Updating Users Rank on: " + t.name:^57}')
+                    print(f'{user:<10}|{str(allUsers[user]):^8}|{"Attempting User Update":^57}')
                     threads.append(t)
                     t.start()
                 elif allUsers[user][1] >= 5:
@@ -229,7 +229,7 @@ def main():
             threads = []
             for user in allUsers.keys():
                 t = Thread(target=updateUserAndQueue, args=(user, allUsers[user]))
-                print(f'{user:<10}|{str(allUsers[user]):^8}|{"Updating Users Rank on: " + t.name:^57}')
+                print(f'{user:<10}|{str(allUsers[user]):^8}|{"Attempting User Update":^57}')
                 threads.append(t)
                 t.start()
 
