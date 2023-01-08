@@ -24,7 +24,7 @@ def getUserDataFromSlippi(tag):
 
 #delete user if tag is not found on slippi servers
 def deleteUserFromDatabase(tag):
-    print('Deleting: ' + tag + ' from the database.')
+    print(f'{tag:^10}|{"|------|":^8}|{"Deleting User From Database":^57}')
     url = "https://data.mongodb-api.com/app/data-wterg/endpoint/data/v1/action/deleteOne"
 
     payload = json.dumps({
