@@ -34,6 +34,7 @@ def updateUserData(id, user, collection):
                 user['queue'][0] += 1 if user['queue'][0] < 7 else 0
                 print(f'{user["tag"]:<9}|{str(user["queue"]):^8}|{" No new elo, incrementing inactive queue":<58}')
         else:
+            print(f'{user["tag"]:<9}|{str(user["queue"]):^8}|{" Updating user elo":<58}')
             updateUserToDatabaseByID(id, slippiData, collection)
     else:
         user['queue'][1] += 1
@@ -86,7 +87,7 @@ def main():
     while True:
         usersToPop = []
         if count%(slowQueue*60) == 0:
-            printHeader(' Slow Queue', startTime)
+            printHeader(' Inactive Queue', startTime)
             allUsers = updateAllUsers(allUsers, collection)
             threads = []
             for key in allUsers.keys():
@@ -102,7 +103,7 @@ def main():
                 thread.join
             count = 0
         elif count%(fastQueue*60) == 0:
-            printHeader(' Fast Queue', startTime)
+            printHeader(' Active Queue', startTime)
             allUsers = updateAllUsers(allUsers, collection)
             threads = []
             for key in allUsers.keys():
