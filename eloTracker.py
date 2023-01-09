@@ -25,13 +25,16 @@ def updateUserData(id, user, collection):
     print(f'{user["tag"]:<9}|{str(user["queue"]):^8}|{" Attempting to update":<58}')
     slippiData = getUserDataFromSlippiByTag(user['tag'])
     if not slippiData['data']['getConnectCode'] == None:
-        if not user['datapoints'][-1] == slippiData['data']['getConnectCode']['user']['rankedNetplayProfile']['ratingOrdinal']:
-            user['queue'] = [0, 0]
-            updateUserToDatabaseByID(id, slippiData, collection)
-            print(f'{user["tag"]:<9}|{str(user["queue"]):^8}|{" Updating user elo":<58}')
+        if len(user['datapoints']) > 0:
+            if not user['datapoints'][-1] == slippiData['data']['getConnectCode']['user']['rankedNetplayProfile']['ratingOrdinal']:
+                user['queue'] = [0, 0]
+                updateUserToDatabaseByID(id, slippiData, collection)
+                print(f'{user["tag"]:<9}|{str(user["queue"]):^8}|{" Updating user elo":<58}')
+            else:
+                user['queue'][0] += 1 if user['queue'][0] < 7 else 0
+                print(f'{user["tag"]:<9}|{str(user["queue"]):^8}|{" No new elo, incrementing inactive queue":<58}')
         else:
-            user['queue'][0] += 1 if user['queue'][0] < 7 else 0
-            print(f'{user["tag"]:<9}|{str(user["queue"]):^8}|{" No new elo, incrementing inactive queue":<58}')
+            updateUserToDatabaseByID(id, slippiData, collection)
     else:
         user['queue'][1] += 1
         print(f'{user["tag"]:<9}|{str(user["queue"]):^8}|{" Not found on slippi servers, incrementing delete":<58}')
