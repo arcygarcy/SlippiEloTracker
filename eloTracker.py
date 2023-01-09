@@ -1,242 +1,132 @@
 from threading import Thread
-import requests
-import json
 import time
+from databaseRequests import *
+from slippiRequests import *
 
-# makes post request to slippi server and returns user data parsed into a dictionary (userTag='*#*')
-def getUserDataFromSlippi(tag):
-    url = 'https://gql-gateway-dot-slippi.uc.r.appspot.com/graphql'
-    data = {
-        "operationName": "AccountManagementPageQuery",
-        "variables": {
-            "cc": tag
-        },
-        "query": "fragment userProfilePage on User {rankedNetplayProfile {\n    ratingOrdinal\n    ratingUpdateCount\n    wins\n    losses\n  characters {\n      character\n      gameCount}}}query AccountManagementPageQuery($cc: String!) {getConnectCode(code: $cc) {user{...userProfilePage}}}"
-    }
+def deleteDuplicateUsers(allUsers, collection):
+    print('---------------------------------------------------------------------------')
+    print(f'{"Current time: " + time.ctime() + " Deleting Duplicate Users":^75}')
+    print('---------------------------------------------------------------------------')
+    print(f'{"TAG":^9}|{"QUEUE":^8}|{"MESSAGE":^58}')
+    print('---------------------------------------------------------------------------')
 
-    response = requests.request("POST", url, json=data)
+    usersWithDups = {}
 
-    data = {'data': {'getConnectCode': None}}
-    if response.status_code == 200:
-        data = json.loads(response.text)
+    for key in allUsers.keys():
+        for key2 in allUsers.keys():
+            if allUsers[key]['tag'] == allUsers[key2]['tag'] and not key == key2:
+                usersWithDups[allUsers[key2]['tag']] = key2
 
-    return data
+    for key in usersWithDups.keys():
+        # print(f'{key:<9}|{"----":^8}|{usersWithDups[key]:^58}')
+        print(f'{key:<9}|{"----":^8}|{"Deleted " + str(deleteUserFromDatabaseByID(usersWithDups[key], collection)["deletedCount"]) + " document(s)":^58}')
 
-#delete user if tag is not found on slippi servers
-def deleteUserFromDatabase(tag):
-    print(f'{tag:<10}|{"----":^8}|{"Deleting User From Database":^57}')
-    url = "https://data.mongodb-api.com/app/data-wterg/endpoint/data/v1/action/deleteOne"
-
-    payload = json.dumps({
-    "dataSource": "SlippiEloTracker",
-    "database": "slippiEloTracker",
-    "collection": "UserData",
-    "filter": {
-        "tag": tag
-    }
-    })
-    headers = {
-    'Content-Type': 'application/json',
-    'Access-Control-Request-Headers': '*',
-    'api-key': 'ZlLdccwmLobGp1zSTU08vCg3XTIFmhaJZkiQxyloWpwpWhYo3QqIsV7ISevWVd1F'
-    }
-
-    response = requests.request("POST", url, headers=headers, data=payload)
-
-    data = json.loads(response.text)
-
-    return data
-
-# gets data for a specific tag
-def getUserFromDataBase(tag):
-    url = "https://data.mongodb-api.com/app/data-wterg/endpoint/data/v1/action/findOne"
-
-    payload = json.dumps({
-    "dataSource": "SlippiEloTracker",
-    "database": "slippiEloTracker",
-    "collection": "UserData",
-    "filter": {
-        "tag": tag
-    }
-    })
-    headers = {
-    'Content-Type': 'application/json',
-    'Access-Control-Request-Headers': '*',
-    'api-key': 'ZlLdccwmLobGp1zSTU08vCg3XTIFmhaJZkiQxyloWpwpWhYo3QqIsV7ISevWVd1F',
-    'Accept': 'application/json'
-    }
-
-    response = requests.request("POST", url, headers=headers, data=payload)
-
-    data = json.loads(response.text)
-
-    return data
-
-# returns all of the tags
-def getAllUsersTagsFromDataBase():
-    url = "https://data.mongodb-api.com/app/data-wterg/endpoint/data/v1/action/find"
-
-    payload = json.dumps({
-    "dataSource": "SlippiEloTracker",
-    "database": "slippiEloTracker",
-    "collection": "UserData",
-    "filter": {
-    }
-    })
-    headers = {
-    'Content-Type': 'application/json',
-    'Access-Control-Request-Headers': '*',
-    'api-key': 'ZlLdccwmLobGp1zSTU08vCg3XTIFmhaJZkiQxyloWpwpWhYo3QqIsV7ISevWVd1F',
-    'Accept': 'application/json'
-    }
-
-    response = requests.request("POST", url, headers=headers, data=payload)
-
-    data = json.loads(response.text)
-
-    tags = []
-    documents = data['documents']
-    for document in documents:
-        tags.append(document['tag'])
-
-    return tags
-
-# adds a new datapoint to a specified tag, data is an array of points
-def updateUserToDatabase(tag, slippiData):
-    url = "https://data.mongodb-api.com/app/data-wterg/endpoint/data/v1/action/updateOne"
-
-    payload = json.dumps({
-    "dataSource": "SlippiEloTracker",
-    "database": "slippiEloTracker",
-    "collection": "UserData",
-    "filter": {
-        "tag": tag
-    },
-    "update": {
-        "$push": {
-            "datapoints": {
-                "$each": [
-                slippiData['data']['getConnectCode']['user']['rankedNetplayProfile']['ratingOrdinal']
-                ],
-                "$slice": -50
-                }
-        },
-        "$set": {
-            "characters": slippiData['data']['getConnectCode']['user']['rankedNetplayProfile']['characters'],
-            "wins": slippiData['data']['getConnectCode']['user']['rankedNetplayProfile']['wins'],
-            "losses": slippiData['data']['getConnectCode']['user']['rankedNetplayProfile']['losses']
-        }
-        }
-    })
-    headers = {
-    'Content-Type': 'application/json',
-    'Access-Control-Request-Headers': '*',
-    'api-key': 'ZlLdccwmLobGp1zSTU08vCg3XTIFmhaJZkiQxyloWpwpWhYo3QqIsV7ISevWVd1F'
-    }
-
-    response = requests.request("POST", url, headers=headers, data=payload)
-
-    data = json.loads(response.text)
-
-    return data
-
-def updateUser(tag):
-    dataFromSlippi = getUserDataFromSlippi(tag)
-    dataFromDatabase = getUserFromDataBase(tag)
-
-    returnData = [0, 0]
-
-    if not dataFromSlippi['data']['getConnectCode'] == None:
-        mostRecentDatabaseRank = dataFromDatabase['document']['datapoints'][-1] if len(dataFromDatabase['document']['datapoints'])>0 else 0
-        currentSlippiRank = dataFromSlippi['data']['getConnectCode']['user']['rankedNetplayProfile']['ratingOrdinal']
-
-        if not mostRecentDatabaseRank == currentSlippiRank:
-            updateUserToDatabase(tag, dataFromSlippi)
+def updateUserData(id, user, collection):
+    print(f'{user["tag"]:<9}|{str(user["queue"]):^8}|{" Attempting to update":<58}')
+    slippiData = getUserDataFromSlippiByTag(user['tag'])
+    if not slippiData['data']['getConnectCode'] == None:
+        if not user['datapoints'][-1] == slippiData['data']['getConnectCode']['user']['rankedNetplayProfile']['ratingOrdinal']:
+            user['queue'] = [0, 0]
+            updateUserToDatabaseByID(id, slippiData, collection)
+            print(f'{user["tag"]:<9}|{str(user["queue"]):^8}|{" Updating user elo":<58}')
         else:
-            returnData[0]=1
+            user['queue'][0] += 1 if user['queue'][0] < 7 else 0
+            print(f'{user["tag"]:<9}|{str(user["queue"]):^8}|{" No new elo, incrementing inactive queue":<58}')
     else:
-        returnData[1]=1
+        user['queue'][1] += 1
+        print(f'{user["tag"]:<9}|{str(user["queue"]):^8}|{" Not found on slippi servers, incrementing delete":<58}')
 
-    return returnData
+def updateAllUsers(allUsers, collection):
+    usersArray = getAllUsersFromDataBase(collection)['documents']
+    for user in usersArray:
+        if user['_id'] in allUsers.keys():
+            allUsers[user['_id']] = {
+                'tag': user['tag'],
+                'datapoints': user['datapoints'],
+                'characters': user['characters'],
+                'wins': user['wins'] if 'wins' in user else 0,
+                'losses': user['losses'] if 'losses' in user else 0,
+                'queue': allUsers[user['_id']]['queue']
+            }
+        else:
+            allUsers[user['_id']] = {
+                'tag': user['tag'],
+                'datapoints': user['datapoints'],
+                'characters': user['characters'],
+                'wins': user['wins'] if 'wins' in user else 0,
+                'losses': user['losses'] if 'losses' in user else 0,
+                'queue': [0, 0]
+            }
 
-def updateUserAndQueue(tag, userData):
-    updateQueueData = updateUser(tag)
-    message = ''
-    if not updateQueueData[0] == 0:
-        userData[0] += 1 if userData[0] < 7 else 0
-        message = 'No Change, Incrementing Long Queue'
-    else:
-        userData[0] = 0
-        message = 'Updated Current Rank'
-    if not updateQueueData[1] == 0:
-        userData[1] += 1
-        message = 'User Not Found, Incrementing Delete Value'
-    else:
-        userData[1] = 0
-    print(f'{tag:<10}|{str(userData):^8}|{message:^57}')
+    return allUsers
+
+def printHeader(queueType, startTime):
+    print('---------------------------------------------------------------------------')
+    print(f'{queueType:^75}')
+    print(f'{"Runtime " + str(round((time.time()-startTime)/3600, 2)) + " hours":^75}')
+    print(f'{"Current time: " + time.ctime():^75}')
+    print('---------------------------------------------------------------------------')
+    print(f'{"TAG":<9}|{" QUEUE":<8}|{" MESSAGE":<58}')
 
 def main():
-    longQueueMinutes = 20
-    shortQueueMinutes = 4
+    slowQueue = 20
+    fastQueue = 4
 
-    allUsers = {}
+    startTime = time.time()
+    
+    collection = 'UserTestData'
+
+    allUsers = updateAllUsers({}, collection)
+
     count = 0
+    clearDups = True
     while True:
-        time.sleep(1)
-
-        if count == 0 or count%(60*shortQueueMinutes) == 0 and not count%(60*longQueueMinutes) == 0:
-            print('---------------------------------------------------------------------------')
-            print(f'{"Current time: " + time.ctime() + " Short Queue Time " + str(shortQueueMinutes) + " mins":^75}')
-            print('---------------------------------------------------------------------------')
-            print(f'{"TAG":^10}|{"QUEUE":^8}|{"MESSAGE":^57}')
-            print('---------------------------------------------------------------------------')
-
-            for user in getAllUsersTagsFromDataBase():
-                if not user in allUsers.keys():
-                    allUsers[user]=[0,0]
-            
-            usersToDelete = []
+        usersToPop = []
+        if count%(slowQueue*60) == 0:
+            printHeader(' Slow Queue', startTime)
+            allUsers = updateAllUsers(allUsers, collection)
             threads = []
-            for user in allUsers.keys():
-                if allUsers[user][0] < 6 and allUsers[user][1] < 5:
-                    t = Thread(target=updateUserAndQueue, args=(user, allUsers[user]))
-                    print(f'{user:<10}|{str(allUsers[user]):^8}|{"Attempting User Update":^57}')
+            for key in allUsers.keys():
+                if allUsers[key]['queue'][1] > 2:
+                    print(f'{allUsers[key]["tag"]:<9}|{str(allUsers[key]["queue"]):^8}|{" Deleting user from database":<58}')
+                    deleteUserFromDatabaseByID(key, collection)
+                    usersToPop.append(key)
+                else:
+                    t = Thread(target=updateUserData, args=(key, allUsers[key], collection))
                     threads.append(t)
                     t.start()
-                elif allUsers[user][1] >= 5:
-                    deleteUserFromDatabase(user)
-                    usersToDelete.append(user)
-
             for thread in threads:
-                thread.join()
-
-            for user in usersToDelete:
-                allUsers.pop(user)
-
-        elif count%(60*longQueueMinutes) == 0:
-            print('---------------------------------------------------------------------------')
-            print(f'{"Current time: " + time.ctime() + " Long Queue Time " + str(longQueueMinutes) + " mins":^75}')
-            print('---------------------------------------------------------------------------')
-            print(f'{"TAG":^10}|{"QUEUE":^8}|{"MESSAGE":^57}')
-            print('---------------------------------------------------------------------------')
-
+                thread.join
             count = 0
-
-            for user in getAllUsersTagsFromDataBase():
-                if not user in allUsers.keys():
-                    allUsers[user]=[0,0]
-            
+        elif count%(fastQueue*60) == 0:
+            printHeader(' Fast Queue', startTime)
+            allUsers = updateAllUsers(allUsers, collection)
             threads = []
-            for user in allUsers.keys():
-                t = Thread(target=updateUserAndQueue, args=(user, allUsers[user]))
-                print(f'{user:<10}|{str(allUsers[user]):^8}|{"Attempting User Update":^57}')
-                threads.append(t)
-                t.start()
-
+            for key in allUsers.keys():
+                if allUsers[key]['queue'][1] > 2:
+                    print(f'{allUsers[key]["tag"]:<9}|{str(allUsers[key]["queue"]):^8}|{" Deleting user from database":<58}')
+                    deleteUserFromDatabaseByID(key, collection)
+                    usersToPop.append(key)
+                elif not allUsers[key]['queue'][0] > 6:
+                    t = Thread(target=updateUserData, args=(key, allUsers[key], collection))
+                    threads.append(t)
+                    t.start()
+            
             for thread in threads:
-                thread.join()
+                thread.join
 
-        count += 1
+        for key in usersToPop:
+            allUsers.pop(key)
+
+        hour = int(time.strftime('%H', time.localtime()))
+        if hour == 1 and clearDups:
+            clearDups = False
+            deleteDuplicateUsers(allUsers=allUsers, collection=collection)
+        if hour == 2:
+            clearDups = True
+
+        time.sleep(1)
+        count+=1
 
 if __name__ == '__main__':
     main()
