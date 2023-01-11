@@ -23,7 +23,7 @@ def deleteDuplicateUsers(allUsers, collection):
     for id in allUsers.keys():
         if not userToKeep[allUsers[id]['tag']][0] == id:
             deleted += 1
-            print(f'{allUsers[id]["tag"]:<9}|{allUsers[id]["queue"]:^8}| {deleteUserFromDatabaseByID(_id=id, collection=collection):<57}')
+            print(f'{allUsers[id]["tag"]:<9}|{str(allUsers[id]["queue"]):^8}| {deleteUserFromDatabaseByID(_id=id, collection=collection):<57}')
 
     if deleted == 0:
         print(f'{"":<9}|{"":^8}| {"No duplicates found":<57}')
