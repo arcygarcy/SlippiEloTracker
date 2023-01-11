@@ -132,7 +132,6 @@ def main():
             allUsers.pop(key)
 
         hour = int(time.strftime('%H', time.localtime()))
-        print(hour)
         if hour == 8 and clearDups:
             clearDups = False
             deleteDuplicateUsers(allUsers=allUsers, collection=collection)
