@@ -4,12 +4,6 @@ from databaseRequests import *
 from slippiRequests import *
 
 def deleteDuplicateUsers(allUsers, collection):
-    print('---------------------------------------------------------------------------')
-    print(f'{"Current time: " + time.ctime() + " Deleting Duplicate Users":^75}')
-    print('---------------------------------------------------------------------------')
-    print(f'{"TAG":<9}|{"QUEUE":^8}|{" MESSAGE":<58}')
-    print('---------------------------------------------------------------------------')
-
     userToKeep = {}
     deleted = 0
 
