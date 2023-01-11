@@ -87,7 +87,7 @@ def main():
 
     startTime = time.time()
     
-    collection = 'UserDataData'
+    collection = 'UserData'
 
     allUsers = updateAllUsers({}, collection)
 
