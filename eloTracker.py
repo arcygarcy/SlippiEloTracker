@@ -130,6 +130,7 @@ def main():
         if hour == 8 and clearDups:
             clearDups = False
             deleteDuplicateUsers(allUsers=allUsers, collection=collection)
+            allUsers = updateAllUsers({}, collection)
         if hour == 9:
             clearDups = True
 
