@@ -31,6 +31,8 @@ def updateUserData(id, user, collection):
     if not slippiData['data']['getConnectCode'] == None:
         if len(user['datapoints']) > 0:
             if not user['datapoints'][-1] == slippiData['data']['getConnectCode']['user']['rankedNetplayProfile']['ratingOrdinal']:
+                if slippiData['data']['getConnectCode']['user']['rankedNetplayProfile']['ratingOrdinal'] > user['peak']:
+                    user['peak'] = slippiData['data']['getConnectCode']['user']['rankedNetplayProfile']['ratingOrdinal']
                 user['queue'] = [0, 0]
                 updateUserToDatabaseByID(id, slippiData, collection)
                 print(f'{user["tag"]:<9}|{str(user["queue"]):^8}|{" Updating user elo":<58}')
@@ -54,6 +56,7 @@ def updateAllUsers(allUsers, collection):
                 'characters': user['characters'],
                 'wins': user['wins'] if 'wins' in user else 0,
                 'losses': user['losses'] if 'losses' in user else 0,
+                'peak': user['peak'] if 'peak' in user else 0,
                 'queue': allUsers[user['_id']]['queue']
             }
         else:
@@ -63,6 +66,7 @@ def updateAllUsers(allUsers, collection):
                 'characters': user['characters'],
                 'wins': user['wins'] if 'wins' in user else 0,
                 'losses': user['losses'] if 'losses' in user else 0,
+                'peak': user['peak'] if 'peak' in user else 0,
                 'queue': [0, 0]
             }
 

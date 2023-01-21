@@ -66,13 +66,16 @@ def updateUserToDatabaseByID(_id, slippiData, collection):
                     "$each": [
                         slippiData['data']['getConnectCode']['user']['rankedNetplayProfile']['ratingOrdinal']
                     ],
-                    "$slice": -50
+                    "$slice": -250
                     }
-            },
+                },
                 "$set": {
                     "characters": slippiData['data']['getConnectCode']['user']['rankedNetplayProfile']['characters'],
                     "wins": slippiData['data']['getConnectCode']['user']['rankedNetplayProfile']['wins'],
                     "losses": slippiData['data']['getConnectCode']['user']['rankedNetplayProfile']['losses']
+                },
+                "$setIfGreater": {
+                    "peak": slippiData['data']['getConnectCode']['user']['rankedNetplayProfile']['ratingOrdinal']
                 }
             }
     })
