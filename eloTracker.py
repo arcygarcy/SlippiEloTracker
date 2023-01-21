@@ -45,7 +45,7 @@ def updateUserData(id, user, collection):
         print(f'{user["tag"]:<9}|{str(user["queue"]):^8}|{" Not found on slippi servers, incrementing delete":<58}')
 
 def updateAllUsers(allUsers, collection):
-    usersArray = getAllUsersFromDataBase(collection)['documents'][0:50]
+    usersArray = getAllUsersFromDataBase(collection)['documents']
     for user in usersArray:
         if user['_id'] in allUsers.keys():
             allUsers[user['_id']] = {
