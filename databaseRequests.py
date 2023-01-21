@@ -74,7 +74,7 @@ def updateUserToDatabaseByID(_id, slippiData, collection):
                     "wins": slippiData['data']['getConnectCode']['user']['rankedNetplayProfile']['wins'],
                     "losses": slippiData['data']['getConnectCode']['user']['rankedNetplayProfile']['losses']
                 },
-                "$setIfGreater": {
+                "$max": {
                     "peak": slippiData['data']['getConnectCode']['user']['rankedNetplayProfile']['ratingOrdinal']
                 }
             }

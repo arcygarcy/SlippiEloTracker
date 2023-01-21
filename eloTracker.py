@@ -31,8 +31,6 @@ def updateUserData(id, user, collection):
     if not slippiData['data']['getConnectCode'] == None:
         if len(user['datapoints']) > 0:
             if not user['datapoints'][-1] == slippiData['data']['getConnectCode']['user']['rankedNetplayProfile']['ratingOrdinal']:
-                if slippiData['data']['getConnectCode']['user']['rankedNetplayProfile']['ratingOrdinal'] > user['peak']:
-                    user['peak'] = slippiData['data']['getConnectCode']['user']['rankedNetplayProfile']['ratingOrdinal']
                 user['queue'] = [0, 0]
                 updateUserToDatabaseByID(id, slippiData, collection)
                 print(f'{user["tag"]:<9}|{str(user["queue"]):^8}|{" Updating user elo":<58}')
@@ -47,7 +45,7 @@ def updateUserData(id, user, collection):
         print(f'{user["tag"]:<9}|{str(user["queue"]):^8}|{" Not found on slippi servers, incrementing delete":<58}')
 
 def updateAllUsers(allUsers, collection):
-    usersArray = getAllUsersFromDataBase(collection)['documents']
+    usersArray = getAllUsersFromDataBase(collection)['documents'][0:50]
     for user in usersArray:
         if user['_id'] in allUsers.keys():
             allUsers[user['_id']] = {
