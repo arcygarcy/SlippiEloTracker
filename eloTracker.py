@@ -3,28 +3,6 @@ import time
 from databaseRequests import *
 from slippiRequests import *
 
-def deleteDuplicateUsers(allUsers, collection):
-    userToKeep = {}
-    deleted = 0
-
-    for id in allUsers.keys():
-        if not allUsers[id]['tag'] in userToKeep.keys():
-            userToKeep[allUsers[id]['tag']] = [id, len(allUsers[id]['datapoints'])]
-        else:
-            if len(allUsers[id]['datapoints']) > userToKeep[allUsers[id]['tag']][1]:
-                userToKeep[allUsers[id]['tag']] = [id, len(allUsers[id]['datapoints'])]
-
-    for id in allUsers.keys():
-        if not userToKeep[allUsers[id]['tag']][0] == id:
-            deleted += 1
-            deleteUserFromDatabaseByID(_id=id, collection=collection)
-            print(f'{allUsers[id]["tag"]:<9}|{str(allUsers[id]["queue"]):^8}| {"Duplicate " + allUsers[id]["tag"] + " deleted from database":<57}')
-
-    if deleted == 0:
-        print(f'{"":<9}|{"":^8}| {"No duplicates found":<57}')
-    else:
-        print(f'{"":<9}|{"":^8}| {str(deleted) + " duplicate(s) deleted":<57}')
-
 def updateUserData(id, user, collection):
     print(f'{user["tag"]:<9}|{str(user["queue"]):^8}|{" Attempting to update":<58}')
     slippiData = getUserDataFromSlippiByTag(user['tag'])
@@ -89,7 +67,6 @@ def main():
     allUsers = updateAllUsers({}, collection)
 
     count = 0
-    clearDups = True
     while True:
         usersToPop = []
         if count%(slowQueue*60) == 0:
@@ -127,14 +104,6 @@ def main():
 
         for key in usersToPop:
             allUsers.pop(key)
-
-        hour = int(time.strftime('%H', time.localtime()))
-        if hour == 8 and clearDups:
-            clearDups = False
-            deleteDuplicateUsers(allUsers=allUsers, collection=collection)
-            allUsers = updateAllUsers({}, collection)
-        if hour == 9:
-            clearDups = True
 
         time.sleep(1)
         count+=1

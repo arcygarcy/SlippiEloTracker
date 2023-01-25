@@ -34,7 +34,8 @@ def getAllUsersFromDataBase(collection):
         "database": "slippiEloTracker",
         "collection": collection,
         "filter": {
-        }
+        }, 
+        "limit": 50000
     })
     headers = {
         'Content-Type': 'application/json',
