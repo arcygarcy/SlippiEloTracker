@@ -6,7 +6,7 @@ from slippiRequests import *
 def updateUserData(id, user, collection):
     print(f'{user["tag"]:<9}|{str(user["queue"]):^8}|{" Attempting to update":<58}')
     slippiData = getUserDataFromSlippiByTag(user['tag'])
-    if not slippiData['data']['getConnectCode'] == None:
+    if not slippiData == None and not slippiData['data']['getConnectCode'] == None:
         if len(user['datapoints']) > 0:
             if not user['datapoints'][-1] == slippiData['data']['getConnectCode']['user']['rankedNetplayProfile']['ratingOrdinal']:
                 user['queue'] = [0, 0]
