@@ -79,6 +79,8 @@ def main():
                     deleteUserFromDatabaseByID(key, collection)
                     usersToPop.append(key)
                 else:
+                    if allUsers[key]['queue'][1] > 0 and not allUsers[key]['queue'][0] == 0:
+                        allUsers[key]['queue'][1] = 0
                     t = Thread(target=updateUserData, args=(key, allUsers[key], collection))
                     threads.append(t)
                     t.start()
