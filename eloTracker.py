@@ -7,8 +7,9 @@ def updateUserData(id, user, collection):
     print(f'{user["tag"]:<9}|{str(user["queue"]):^8}|{" Attempting to update":<58}')
     slippiData = getUserDataFromSlippiByTag(user['tag'])
     if not slippiData['data']['getConnectCode'] is None:
+        slippiDataNumer = slippiData['data']['getConnectCode']['user']['rankedNetplayProfile']['ratingOrdinal']
         if len(user['datapoints']) > 0:
-            if not user['datapoints'][-1] == slippiData['data']['getConnectCode']['user']['rankedNetplayProfile']['ratingOrdinal']:
+            if type(slippiDataNumer) is float and not slippiDataNumer == user['datapoints'][-1]:
                 user['queue'] = [0, 0]
                 updateUserToDatabaseByID(id, slippiData, collection)
                 print(f'{user["tag"]:<9}|{str(user["queue"]):^8}|{" Updating user elo":<58}')
