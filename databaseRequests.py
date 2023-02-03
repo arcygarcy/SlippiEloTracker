@@ -52,6 +52,9 @@ def getAllUsersFromDataBase(collection):
 
 # adds a new datapoint to a specified tag, data is an array of points
 def updateUserToDatabaseByID(_id, slippiData, collection):
+    if not slippiData is float:
+        return
+
     url = "https://data.mongodb-api.com/app/data-wterg/endpoint/data/v1/action/updateOne"
 
     payload = json.dumps({
