@@ -4,9 +4,9 @@ from databaseRequests import *
 from slippiRequests import *
 
 def log(message):
-    currentTime = datetime.datetime.now()
+    currentTime = datetime.datetime.now().replace(microsecond=0)
     file = open('log.txt', 'a')
-    file.write(str(currentTime.replace(microseconds=0)) + ' ' + message)
+    file.write(str(currentTime) + ' ' + message)
     file.write('\n')
     file.close()
 
