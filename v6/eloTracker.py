@@ -26,7 +26,11 @@ def updateUser(user, collection):
         if user['delete'] != 0:
             updateUserDeleteToDataBaseByID(user['_id'], 0, collection)
         currentSlippiData = slippiData['data']['getConnectCode']['user']['rankedNetplayProfile']
-        if user['datapoints'][-1] != currentSlippiData['ratingOrdinal']:
+        if len(user['datapoints']) == 0:
+            user['active'] = 0
+            updateUserToDatabaseByID(user['_id'], currentSlippiData, collection)
+            updateUserActiveToDataBaseByID(user['_id'], user['active'], collection)
+        elif user['datapoints'][-1] != currentSlippiData['ratingOrdinal']:
             user['active'] = 0
             updateUserToDatabaseByID(user['_id'], currentSlippiData, collection)
             updateUserActiveToDataBaseByID(user['_id'], user['active'], collection)
