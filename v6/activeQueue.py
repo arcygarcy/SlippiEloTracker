@@ -2,7 +2,7 @@ from eloTracker import *
 from databaseRequests import *
 
 def main():
-    collection = "UserTestData"
+    collection = "UserData"
     activeUsers = getAllActiveUsersFromDataBase(collection)
 
     updateUsers(activeUsers, collection)

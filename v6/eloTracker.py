@@ -19,6 +19,7 @@ def updateUser(user, collection):
             log(user['tag'] + ' deleted from database')
             deleteUserFromDatabaseByID(user['_id'], collection)
         else:
+            log(user['tag'] + ' incrementing delete')
             user['delete'] += 1
             updateUserDeleteToDataBaseByID(user['_id'], user['delete'], collection)
     else:
@@ -37,7 +38,7 @@ def updateUsers(users, collection):
     log('Attempting to update ' + str(len(users['documents'])) + ' users')
 
     threads = []
-    for user in users['documents']:
+    for user in users['documents'][0:5]:
         userThread = Thread(target=updateUser, args=(user, collection,))
         threads.append(userThread)
         userThread.start()
