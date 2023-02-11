@@ -6,7 +6,7 @@ from slippiRequests import *
 def log(message):
     currentTime = datetime.datetime.now()
     file = open('log.txt', 'a')
-    file.write(str(currentTime) + ' ' + message)
+    file.write(str(currentTime.replace(microseconds=0)) + ' ' + message)
     file.write('\n')
     file.close()
 
