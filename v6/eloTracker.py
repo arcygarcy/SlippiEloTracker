@@ -38,7 +38,7 @@ def updateUsers(users, collection):
     log('Attempting to update ' + str(len(users['documents'])) + ' users')
 
     threads = []
-    for user in users['documents'][0:5]:
+    for user in users['documents']:
         userThread = Thread(target=updateUser, args=(user, collection,))
         threads.append(userThread)
         userThread.start()
